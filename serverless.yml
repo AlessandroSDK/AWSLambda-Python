@@ -1,0 +1,61 @@
+
+service: pyblog
+
+provider:
+  name: aws
+  runtime: python2.7
+  stage: dev
+  region: eu-central-1
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - dynamodb:Query
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:DeleteItem
+    Resource: "arn:aws:dynamodb:eu-central-1:083804445843:table/PyTable"
+
+
+functions:
+  create:
+    handler: create.handler
+    events:
+      - http:
+          path: articles
+          method: post
+  read:
+    handler: read.handler
+    events:
+      - http:
+          path: articles/{id}
+          method: get
+  update:
+    handler: update.handler
+    events:
+      - http:
+          path: articles
+          method: put
+  delete:
+    handler: delete.handler
+    events:
+      - http:
+          path: articles
+          method: delete
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    BlogTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: PyTable
+        AttributeDefinitions:
+          - AttributeName: article_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: article_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
